@@ -1,0 +1,17 @@
+# Dependencies for the EL image-processing + segmentation pipeline and the
+# modeling section of the workshop.
+#
+# On Google Colab these are ALL preinstalled (torch, torchvision, opencv, numpy,
+# pandas, matplotlib, scikit-learn) — the notebook just imports them, no pip step
+# needed. This file is for local / HPC runs of the pipeline.
+#
+# Note: numpy is pinned < 2 because the pinned torch wheels are built against the
+# numpy 1.x ABI; newer torch relaxes this, but < 2 is the validated combination.
+
+opencv-python>=4.6
+numpy>=1.23,<2
+pandas>=1.4
+torch>=1.12
+torchvision>=0.13
+matplotlib>=3.5
+scikit-learn>=1.1

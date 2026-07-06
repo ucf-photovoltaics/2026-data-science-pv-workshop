@@ -56,6 +56,10 @@ env/
 *.pkl
 *.pickle
 
+# Model weights ship as a Release asset (fetched via scripts/download_weights.py)
+*.pth
+*.pt
+
 # Jupyter / notebook
 .ipynb_checkpoints/
 *.ipynb.bak
