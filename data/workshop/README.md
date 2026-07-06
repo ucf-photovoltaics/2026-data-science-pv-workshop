@@ -93,6 +93,27 @@ If you rebuild the zip, update `EXPECTED_SHA256` in the downloader
 (`shasum -a 256 el_input_images.zip`). Current asset SHA-256:
 `b929cef3f813f3f4b7070bb5f6d274777ab39f5ce1cf45ebed4b3662b60b57cf`.
 
+## Precomputed results
+
+Running the full pipeline (segmenting all 7,452 cells) is a one-time ~1 h CPU job
+(minutes on a GPU). Its outputs are shipped so nothing depends on live GPU compute:
+
+- **`metadata_with_el_features.csv`** (committed) — `metadata.csv` plus the
+  aggregated EL feature columns (`el_crack_frac_mean`, `el_defect_frac_total`,
+  `el_frac_cells_cracked`, `el_crack_frac_max`, per-class means, `el_n_cells`).
+  This is the table the notebook's modeling section reads, so it runs for every
+  student regardless of GPU. Headline signal: `el_crack_frac_mean` vs
+  `power_loss_percent` correlates at **r = 0.93**.
+- **Restitched module masks** (optional, ~304 MB) — one defect-overlay image per
+  EL image, published as the `el_precomputed_masks.zip` release asset:
+
+  ```python
+  from scripts.download_masks import download_masks
+  download_masks()   # -> images/05_module_restitched/<module>/<image>.png
+  ```
+
+The per-cell masks (`04_cell_masks`) are intermediate and regenerated on demand.
+
 ## Provenance
 
 Built from the UCF-PVMCF module databases (`el-metadata`, `module-metadata`,
