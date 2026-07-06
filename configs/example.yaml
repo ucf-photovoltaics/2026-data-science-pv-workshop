@@ -1,0 +1,33 @@
+# Example configuration file for rdstemplate.
+# Copy this file and customise for your experiment.
+
+data_source:
+  type: local                          # local | drive | s3
+  path: data/sample                    # root directory of your data
+
+metadata:
+  file: data/sample/metadata.csv       # CSV with sample_id + exposure_step columns
+  sample_id_col: sample_id
+  exposure_step_col: exposure_step
+
+extractors:
+  curves:
+    - name: curve_auc
+  spectra:
+    - name: spectra_peaks
+  images:
+    - name: image_basic_stats
+  timeseries:
+    - name: timeseries_summary
+
+merge:
+  gap_fill_policy: none                # none | ffill | interpolate
+
+model:
+  name: random_forest_regressor
+  target_col: outcome
+  hyperparameters:
+    n_estimators: 100
+    random_state: 42
+
+random_seed: 42

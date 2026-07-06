@@ -1,0 +1,52 @@
+# Apptainer/Singularity definition file for rdstemplate.
+# v0.1.0: STUB — adjust base image and pip install path as needed.
+#
+# Build with (requires root or --fakeroot):
+#   apptainer build rdstemplate.sif environments/hpc/container.def
+#
+# Run with:
+#   apptainer exec rdstemplate.sif python -m rdstemplate run --config ...
+#
+# Or via submit_slurm.sh (see RUNNER variable in that script).
+
+Bootstrap: docker
+From: python:3.11-slim
+
+%post
+    pip install --upgrade pip pip-tools
+
+    # Install pinned dependencies.
+    # FIXME: copy requirements.txt into the build context or fetch from your repo.
+    pip install \
+        "pydantic==2.7.1" \
+        "pyyaml==6.0.1" \
+        "pandas==2.2.2" \
+        "numpy==1.26.4" \
+        "scikit-learn==1.5.2" \
+        "scipy==1.13.1" \
+        "pyarrow==16.1.0" \
+        "pillow==12.2.0" \
+        "boto3==1.34.84" \
+        "s3fs==2024.3.1" \
+        "aiohttp==3.14.1" \
+        "urllib3==2.7.0"
+
+    # Install the package itself.
+    # FIXME: replace with your actual repo path or a pip install from PyPI/GitHub.
+    # Option A — install from a local copy baked into the container:
+    # COPY . /opt/rdstemplate
+    # pip install /opt/rdstemplate --no-deps
+
+    # Option B — install from GitHub at build time (requires internet at build time):
+    # pip install git+https://github.com/ucf-photovoltaics/research-ds-template.git@v0.1.0
+
+%environment
+    export PYTHONUNBUFFERED=1
+
+%labels
+    Author ucf-photovoltaics
+    Version 0.1.0
+
+%help
+    Research data-science template container.
+    Usage: apptainer exec rdstemplate.sif python -m rdstemplate --help

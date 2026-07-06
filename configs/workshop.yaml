@@ -1,0 +1,38 @@
+# Configuration for the 2026 Data Science PV Workshop (Oxford).
+#
+# Dataset: 4 crystalline-silicon PV modules subjected to a mechanical-load
+# (pressure) sequence. Each row is one EL image / exposure step, already joined
+# to its Sinton I-V measurement features. Grain: (sample_id, exposure_step).
+#
+# NOTE ON IMAGES: unlike the built-in `image_basic_stats` demo, the workshop
+# extracts EL features via the segmentation model in the accompanying notebook
+# (perspective-correct -> cell crop -> segment -> re-stitch -> aggregate), then
+# merges those features back onto this dataframe. The staged image folders under
+# data/workshop/images/ hold the intermediate artifacts of that pipeline.
+
+data_source:
+  type: local
+  path: data/workshop
+
+metadata:
+  file: data/workshop/metadata.csv     # the "clean dataframe" handed to students
+  sample_id_col: sample_id             # module serial number
+  exposure_step_col: exposure_step     # per-module index over the pressure sequence
+
+# The provided dataframe already carries the I-V features, so no curve/spectra/
+# timeseries extractors are needed. EL image features are produced in the
+# notebook and merged in during the hands-on segmentation section.
+extractors:
+  images: []
+
+merge:
+  gap_fill_policy: none
+
+model:
+  name: random_forest_regressor
+  target_col: iv_pmp_w                  # maximum-power point (W); performance target
+  hyperparameters:
+    n_estimators: 100
+    random_state: 42
+
+random_seed: 42

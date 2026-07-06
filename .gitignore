@@ -1,0 +1,77 @@
+# Pipeline outputs
+outputs/
+
+# Data — ignore everything under data/ by default, then re-include curated inputs.
+# (Use data/* not data/ so that re-included subdirectories are reachable.)
+data/*
+!data/sample/
+!data/workshop/
+
+# Workshop input EL images ship as a GitHub Release asset (fetched via
+# scripts/download_workshop_data.py), NOT committed — keeps the clone lean.
+data/workshop/images/01_input/**/*.png
+data/workshop/images/01_input/**/*.jpg
+
+# Workshop: derived image stages (2-5) are regenerated during the workshop.
+# Ignore the generated images by extension so the .gitkeep folder skeleton stays.
+data/workshop/images/02_module_rectified/**/*.png
+data/workshop/images/02_module_rectified/**/*.jpg
+data/workshop/images/03_cells/**/*.png
+data/workshop/images/03_cells/**/*.jpg
+data/workshop/images/04_cell_masks/**/*.png
+data/workshop/images/04_cell_masks/**/*.jpg
+data/workshop/images/05_module_restitched/**/*.png
+data/workshop/images/05_module_restitched/**/*.jpg
+
+# Built release asset (upload to the GitHub Release; do not commit)
+/el_input_images.zip
+
+# Credentials and secrets
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+*credentials*
+*secret*
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+.venv/
+venv/
+env/
+
+# Unsafe serialization formats (use Parquet/npz instead)
+*.pkl
+*.pickle
+
+# Jupyter / notebook
+.ipynb_checkpoints/
+*.ipynb.bak
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Pre-commit
+.pre-commit-cache/
+
+# IDE / local tooling
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+.DS_Store

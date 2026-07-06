@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test & Security
+    runs-on: ubuntu-latest
+
+    steps:
+      # Actions pinned to full commit SHAs (not tags) per security best practice.
+
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
+
+      - name: Set up Python
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55  # v5.5.0
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install pip-tools
+        run: pip install pip-tools
+
+      - name: Compile hash-locked requirements (CI canonical build)
+        # requirements.txt committed to the repo is a reference compiled on the
+        # maintainer's machine. CI recompiles to get the correct wheel hashes for
+        # the CI platform (Linux x86-64, Python 3.11). The compiled output is used
+        # only within this job; the committed file documents pinned versions.
+        run: pip-compile --generate-hashes requirements.in -o requirements-ci.txt
+
+      - name: Install dependencies from CI-compiled lockfile
+        run: pip install -r requirements-ci.txt
+
+      - name: Install package (editable, no deps)
+        run: pip install -e . --no-deps
+
+      - name: Install dev/audit tools
+        run: pip install pytest bandit pip-audit
+
+      - name: Generate synthetic sample data
+        run: python tests/generate_sample_data.py
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Security — bandit (src/)
+        run: bandit -r src/ -ll
+
+      - name: Security — pip-audit (fail on known vulnerabilities)
+        run: pip-audit --requirement requirements-ci.txt
