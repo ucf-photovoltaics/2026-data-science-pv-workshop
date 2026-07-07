@@ -114,6 +114,41 @@ Running the full pipeline (segmenting all 7,452 cells) is a one-time ~1 h CPU jo
 
 The per-cell masks (`04_cell_masks`) are intermediate and regenerated on demand.
 
+## EL feature columns (`el_*`)
+
+Every cell image is run through the segmentation model, which classifies each
+pixel as **background** (no defect) or one of four defect classes: **crack**,
+**contact**, **interconnect**, **corrosion**. A pixel is labeled background if
+its predicted background probability is ≥ 0.52; otherwise it takes whichever
+defect class has the highest probability. From that per-pixel mask, each cell
+gets four **per-cell fractions** — for each defect class, the share of that
+cell's pixels assigned to it. All `el_*` columns below are built by aggregating
+these per-cell fractions across every cell in one EL photograph (60, 72, or 96
+cells depending on the module).
+
+| Column | Meaning | Calculation |
+|---|---|---|
+| `el_crack_frac_mean` | Average share of a cell's area classified as crack, averaged over the whole module image. The strongest single predictor of power loss (r ≈ 0.93). | Mean of the per-cell crack fraction across all cells in the image. |
+| `el_contact_frac_mean` | Average per-cell share of pixels classified as a contact defect. | Mean of the per-cell contact fraction across all cells. |
+| `el_interconnect_frac_mean` | Average per-cell share of pixels classified as an interconnect defect. | Mean of the per-cell interconnect fraction across all cells. |
+| `el_corrosion_frac_mean` | Average per-cell share of pixels classified as corrosion. | Mean of the per-cell corrosion fraction across all cells. |
+| `el_defect_frac_total` | Overall defect severity for the module image, combining all four defect types into one number instead of looking at crack alone. | Per cell, sum the four defect fractions into one per-cell total; then average that total across all cells. |
+| `el_crack_frac_max` | The single worst cell's crack severity — catches a module that's fine everywhere except one badly cracked cell, which a mean would dilute. | Maximum (not average) of the per-cell crack fraction across all cells. |
+| `el_frac_cells_cracked` | What fraction of the module's cells are meaningfully cracked at all — a prevalence measure rather than a severity measure. | A cell counts as cracked if its crack fraction exceeds 1% (`CRACKED_CELL_THRESHOLD` in `features.py`); this column is (# cracked cells) ÷ (total cells). |
+| `el_n_cells` | How many cells were segmented for this image — a sanity/denominator column for spotting a partial or failed segmentation run. | Count of cell records grouped into that image. |
+
+**Why both a mean and a max/prevalence version:** `el_crack_frac_mean` alone
+can't distinguish "one severely cracked cell" from "mild cracking spread across
+many cells" — both could average to the same number. `el_crack_frac_max` catches
+the first case, `el_frac_cells_cracked` catches the second. `el_defect_frac_total`
+exists because a module could show low crack area but meaningful contact/
+interconnect/corrosion damage instead — summing before averaging keeps that
+visible rather than requiring four separate mean columns to be checked.
+
+These columns are produced by `rdstemplate.el.features.aggregate_cells`, grouped
+by `(module, image)`, then joined onto `metadata.csv` by EL image filename
+(`merge_features`) — see `src/rdstemplate/el/features.py`.
+
 ## Provenance
 
 Built from the UCF-PVMCF module databases (`el-metadata`, `module-metadata`,
