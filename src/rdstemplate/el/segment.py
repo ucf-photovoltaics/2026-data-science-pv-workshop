@@ -49,8 +49,12 @@ def load_model(weights_path: str | Path = DEFAULT_WEIGHTS, *, device: str = "cpu
 
     model = torchvision.models.segmentation.deeplabv3_resnet50(weights=None, aux_loss=True)
     model.classifier = DeepLabHead(2048, len(CLASSES))
-    # checkpoint is a trusted, checksum-verified file (see download_weights.py)
-    ckpt = torch.load(str(weights_path), map_location=device, weights_only=False)
+    # The checkpoint bundles the training args (an argparse.Namespace) next to the
+    # tensors, so weights_only=True cannot load it. The file is our own, fetched
+    # from the release and SHA-256-verified by scripts/download_weights.py, so a
+    # full load is acceptable here. weights_only=False is explicit so it also loads
+    # on torch >= 2.6, where the default flipped to True.
+    ckpt = torch.load(str(weights_path), map_location=device, weights_only=False)  # nosec B614
     model.load_state_dict(ckpt["model"])
     model.eval().to(device)
     return model
